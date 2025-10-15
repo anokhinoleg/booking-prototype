@@ -18,16 +18,17 @@ final readonly class AvailabilityStatus
         #[OA\Property(
             type: 'array',
             items: new OA\Items(
-                type: 'object',
                 properties: [
                     new OA\Property(property: 'field', type: 'string'),
                     new OA\Property(property: 'code', type: 'string'),
                     new OA\Property(property: 'message', type: 'string'),
                 ],
+                type: 'object',
             ),
             nullable: true,
         )]
         public array $violations = [],
+        public ?string $message = null,
     ) {
     }
 }

@@ -29,7 +29,7 @@ final readonly class CreateReservation
                     id: null,
                     status: ReservationStatuses::FAILED->value,
                     violations: array_map(
-                        fn(Violation $violation): array => [
+                        static fn(Violation $violation): array => [
                             'field' => $violation->field,
                             'code' => $violation->code,
                             'message' => $violation->message,
@@ -51,7 +51,7 @@ final readonly class CreateReservation
             return new ReservationStatus(
                 id: null,
                 status: ReservationStatuses::FAILED->value,
-                message: json_encode($exception->getMessage()),
+                message: $exception->getMessage(),
             );
         }
     }

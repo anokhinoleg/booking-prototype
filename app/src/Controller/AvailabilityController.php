@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Dto\AvailabilityRequest;
+use App\Dto\AvailabilityCheck;
 use App\Dto\AvailabilityStatus;
 use App\Service\CheckAvailability;
 use Nelmio\ApiDocBundle\Attribute\Model;
@@ -28,30 +28,13 @@ final class AvailabilityController extends AbstractController
         summary: 'Check whether the selected vehicle is free for the requested rental window.',
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: new Model(type: AvailabilityRequest::class)),
+            content: new OA\JsonContent(ref: new Model(type: AvailabilityCheck::class)),
         ),
         responses: [
             new OA\Response(
                 response: 200,
                 description: 'Vehicle availability state.',
-                content: new OA\JsonContent(
-                    properties: [
-                        new OA\Property(property: 'available', type: 'boolean'),
-                        new OA\Property(
-                            property: 'violations',
-                            type: 'array',
-                            nullable: true,
-                            items: new OA\Items(
-                                type: 'object',
-                                properties: [
-                                    new OA\Property(property: 'field', type: 'string'),
-                                    new OA\Property(property: 'code', type: 'string'),
-                                    new OA\Property(property: 'message', type: 'string'),
-                                ],
-                            ),
-                        ),
-                    ],
-                ),
+                content: new OA\JsonContent(ref: new Model(type: AvailabilityStatus::class)),
             ),
             new OA\Response(
                 response: 400,
@@ -65,44 +48,14 @@ final class AvailabilityController extends AbstractController
             ),
         ]
     )]
-    public function check(#[MapRequestPayload] AvailabilityRequest $availabilityRequest): JsonResponse
+    public function check(#[MapRequestPayload] AvailabilityCheck $availabilityRequest): JsonResponse
     {
         $availabilityStatus = $this->checkAvailability->execute($availabilityRequest);
 
-        $statusCode = $this->resolveStatusCode($availabilityStatus);
-
-        return $this->json(
-            data: [
-                'available' => $availabilityStatus->available,
-                'violations' => $availabilityStatus->violations !== [] ? $availabilityStatus->violations : null,
-            ],
-            status: $statusCode,
-        );
-    }
-
-    public function calendar(): JsonResponse
-    {
-        //TODO: get busy dates logic
-        return $this->json([]);
-    }
-
-    private function resolveStatusCode(AvailabilityStatus $availabilityStatus): int
-    {
-        if ($availabilityStatus->available) {
-            return 200;
+        if (count($availabilityStatus->violations)) {
+            return $this->json(data: $availabilityStatus, status: 400);
         }
 
-        $codes = array_map(static fn(array $violation): string => $violation['code'], $availabilityStatus->violations);
-
-        if (in_array('unavailable', $codes, true)) {
-            return 503;
-        }
-
-        if ($codes === [] || (count($codes) === 1 && $codes[0] === 'overlap')) {
-            return 200;
-        }
-
-        return 400;
+        return $this->json($availabilityStatus);
     }
-
 }

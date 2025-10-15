@@ -13,7 +13,7 @@ use OpenApi\Attributes as OA;
         'endDate',
     ],
 )]
-final readonly class AvailabilityRequest
+final readonly class AvailabilityCheck
 {
     public function __construct(
         #[OA\Property(type: 'integer', example: 1, nullable: false)]

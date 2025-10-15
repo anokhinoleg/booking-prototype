@@ -24,6 +24,7 @@ final class ReservationController extends AbstractController
     #[Route('/reservations', methods: ['POST'])]
     #[OA\Post(
         path: '/v1/reservations',
+        summary: 'Create a new reservation.',
         requestBody: new OA\RequestBody(required: true),
         responses: [
             new OA\Response(
