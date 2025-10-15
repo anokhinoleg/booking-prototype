@@ -1,25 +1,22 @@
 # Booking Prototype API
 
-A Symfony 7 REST prototype for a short-term vehicle rental flow. It exposes a thin slice of the future rental platform so that product and operations teams can validate availability checks, reservation capture, and manual status management before committing to a full build.
+A Symfony 7 REST prototype for a short-term vehicle rental flow.
 
 ## Vision & Scope
 
 | Stage | Focus | Scope |
 | --- | --- | --- |
 | **Prototype (this repo)** | Validate critical booking happy-paths | \- Availability search that merges live reservations with fixed subscription blocks.<br>\- Reservation capture with lead-time, date-order, and length validation plus overlap guards.<br>\- Manual admin confirmation/decline flows for newly created reservations.<br>\- Occupancy reporting for vehicle calendars. |
-| **MVP** | Ship end-to-end self-service rentals | \- Authentication for customers and internal users.<br>\- Pricing, quotes, and payment capture.<br>\- Automated confirmation rules, cancellation support, and customer notifications.<br>\- Inventory management for fleets and subscription imports. |
-| **Later Iterations** | Optimize operations & growth | \- Dynamic pricing and yield management.<br>\- Partner integrations (insurance, identity, telematics).<br>\- Advanced analytics, loyalty, and upsell flows.<br>\- Self-service modifications and extensions. |
 
 ## Architecture Overview
 
 - **Framework:** Symfony 7 with attribute-based routing and DTO-driven request mapping.
-- **Persistence:** MySQL 8 accessed via Doctrine DBAL table gateways; a single `reservation` table backs the flow.
+- **Persistence:** MySQL 8 accessed via Doctrine DBAL table gateways; all flow goes around a single `reservation` table .
 - **Documentation:** NelmioApiDoc generates OpenAPI docs for `/v1` endpoints.
 - **Containers:** `docker-compose.yaml` starts MySQL, PHP-FPM, and Nginx services for local development.
 
-## API Surface
+## API Usage
 
-All routes are prefixed with `/v1`.
 
 | Endpoint | Method | Purpose |
 | --- | --- | --- |
@@ -60,7 +57,8 @@ Visit `/api/doc` (default Nelmio route) once the stack is running to explore sch
 ### Iterating
 
 - Application URL: `http://localhost:8080` (Symfony front controller).
-- API base URL: `http://localhost:8080/v1`.
+- Swagger base URL: `http://localhost:8080/api/doc`.
+- Doc json base URL: `http://localhost:8080/api/doc.json`.
 - To stop services: `docker compose down`.
 - To inspect logs: `docker compose logs -f php` (replace `php` with `web` or `db` as needed).
 
@@ -69,9 +67,3 @@ Visit `/api/doc` (default Nelmio route) once the stack is running to explore sch
 - `reservation` table columns and constraints are defined in `app/migrations/Version20251015092411.php`. Lead time, pickup-before-return, and maximum duration rules are also reinforced in code-level validators.
 - The prototype hardcodes subscription blackout ranges so that availability checks combine ad-hoc reservations with fleet commitments.
 - Reservation status transitions are limited to `REQUESTED → CONFIRMED|DECLINED`; subsequent transitions and automation are deferred to the MVP.
-
-## Next Steps
-
-- Replace the static subscription DAO with integrations to real subscription/long-term lease data.
-- Add authentication, audit trails, and eventing around reservation lifecycle changes.
-- Extend automated tests (unit and contract) to cover service and controller behaviour before growing the surface area.

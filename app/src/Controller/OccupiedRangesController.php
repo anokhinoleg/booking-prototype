@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/v1')]
-#[OA\Tag(name: 'occupied-ranges')]
+#[OA\Tag(name: 'availability')]
 final class OccupiedRangesController extends AbstractController
 {
     public function __construct(private readonly GetOccupiedRanges $getOccupiedRanges)
