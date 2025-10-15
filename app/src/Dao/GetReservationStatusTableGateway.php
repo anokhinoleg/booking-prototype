@@ -8,13 +8,13 @@ use App\Enum\ReservationStatuses;
 use App\Exception\ReservationNotFoundException;
 use Doctrine\ORM\EntityManagerInterface;
 
-final readonly class FetchReservationStatusTableGateway implements FetchReservationStatusGatewayInterface
+final readonly class GetReservationStatusTableGateway implements GetReservationStatusGatewayInterface
 {
     public function __construct(private EntityManagerInterface $entityManager)
     {
     }
 
-    public function fetch(int $reservationId): ReservationStatuses
+    public function get(int $reservationId): ReservationStatuses
     {
         $connection = $this->entityManager->getConnection();
 

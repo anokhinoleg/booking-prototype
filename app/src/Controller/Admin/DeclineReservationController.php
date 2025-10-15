@@ -10,6 +10,7 @@ use App\Exception\ReservationNotFoundException;
 use App\Exception\ReservationStatusChangeException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use OpenApi\Attributes as OA;
 
@@ -21,18 +22,14 @@ final class DeclineReservationController extends AbstractController
     {
     }
 
-    #[Route('/reservations/{id}/decline', methods: ['PUT'])]
-    #[OA\Put(path: '/v1/reservations/{id}/decline')]
-    public function decline(int $id): JsonResponse
+    #[Route('/reservations/{id}/decline', methods: ['PATCH'])]
+    #[OA\Patch(path: '/v1/reservations/{id}/decline')]
+    public function decline(int $id, #[MapRequestPayload] ReservationStatuses $status): JsonResponse
     {
         try {
             $updatedStatus = $this->updateReservationStatus->execute($id, ReservationStatuses::DECLINED);
 
-            return $this->json([
-                'id' => $updatedStatus->reservationId,
-                'previous_status' => $updatedStatus->previousStatus,
-                'status' => $updatedStatus->newStatus,
-            ]);
+            return $this->json($updatedStatus);
         } catch (ReservationNotFoundException $exception) {
             return $this->json(
                 data: ['message' => $exception->getMessage()],

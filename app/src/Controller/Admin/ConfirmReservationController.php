@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
+use App\Dto\UpdatedReservationStatus;
 use App\Enum\ReservationStatuses;
 use App\Service\UpdateReservationStatus;
 use App\Exception\ReservationNotFoundException;
 use App\Exception\ReservationStatusChangeException;
+use Nelmio\ApiDocBundle\Attribute\Model;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use OpenApi\Attributes as OA;
 
@@ -21,18 +24,33 @@ final class ConfirmReservationController extends AbstractController
     {
     }
 
-    #[Route('/reservations/{id}/confirm', methods: ['PUT'])]
-    #[OA\Put(path: '/v1/reservations/{id}/confirm')]
-    public function confirm(int $id): JsonResponse
+    #[Route('/reservations/{id}/confirm', methods: ['PATCH'])]
+    #[OA\Patch(
+        path: '/v1/reservations/{id}/confirm',
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                type: ReservationStatuses::class,
+                example: ReservationStatuses::CONFIRMED->value,
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Reservation confirmed',
+                content: new OA\JsonContent(
+                    ref: new Model(type: UpdatedReservationStatus::class)
+                ),
+            ),
+            //@TODO:: add not successful responses docs
+        ]
+    )]
+    public function confirm(int $id, #[MapRequestPayload] ReservationStatuses $status): JsonResponse
     {
         try {
-            $updatedStatus = $this->updateReservationStatus->execute($id, ReservationStatuses::CONFIRMED);
+            $updatedStatus = $this->updateReservationStatus->execute($id, $status);
 
-            return $this->json([
-                'id' => $updatedStatus->reservationId,
-                'previous_status' => $updatedStatus->previousStatus,
-                'status' => $updatedStatus->newStatus,
-            ]);
+            return $this->json($updatedStatus);
         } catch (ReservationNotFoundException $exception) {
             return $this->json(
                 data: ['message' => $exception->getMessage()],

@@ -71,11 +71,14 @@ final class ReservationController extends AbstractController
             );
         }
 
-        return $this->json([
-            'reservation_id' => $reservationStatus->id,
-            'reservation_status' => $reservationStatus->status,
-            'message' => $reservationStatus->message,
-            'reservation' => $reservation,
-        ]);
+        return $this->json(
+            data: [
+                'reservation_id' => $reservationStatus->id,
+                'reservation_status' => $reservationStatus->status,
+                'message' => $reservationStatus->message,
+                'reservation' => $reservation,
+            ],
+            status: 201
+        );
     }
 }

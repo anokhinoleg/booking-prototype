@@ -12,9 +12,9 @@ interface UpdateReservationStatusGatewayInterface
     /**
      * Update reservation status and return the resulting state.
      */
-    public function updateStatus(
+    public function update(
         int $reservationId,
         ReservationStatuses $currentStatus,
         ReservationStatuses $newStatus,
-    ): UpdatedReservationStatus;
+    ): int;
 }

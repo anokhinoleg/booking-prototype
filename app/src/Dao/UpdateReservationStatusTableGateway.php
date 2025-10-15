@@ -15,12 +15,11 @@ final readonly class UpdateReservationStatusTableGateway implements UpdateReserv
     {
     }
 
-    public function updateStatus(
+    public function update(
         int $reservationId,
         ReservationStatuses $currentStatus,
         ReservationStatuses $newStatus,
-    ): UpdatedReservationStatus
-    {
+    ): int {
         $connection = $this->entityManager->getConnection();
 
         $affectedRows = $connection->createQueryBuilder()
@@ -39,16 +38,12 @@ final readonly class UpdateReservationStatusTableGateway implements UpdateReserv
             throw new ReservationStatusChangeException(
                 sprintf(
                     'Unable to change reservation status from %s to %s.',
-                    strtolower($currentStatus->value),
-                    strtolower($newStatus->value)
+                    $currentStatus->value,
+                    $newStatus->value,
                 )
             );
         }
 
-        return new UpdatedReservationStatus(
-            reservationId: $reservationId,
-            previousStatus: $currentStatus->value,
-            newStatus: $newStatus->value,
-        );
+        return (int) $affectedRows;
     }
 }
