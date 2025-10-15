@@ -42,7 +42,41 @@ final class ConfirmReservationController extends AbstractController
                     ref: new Model(type: UpdatedReservationStatus::class)
                 ),
             ),
-            //@TODO:: add not successful responses docs
+            new OA\Response(
+                response: 404,
+                description: 'Reservation not found',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'message', type: 'string', example: 'Reservation not found.'),
+                    ],
+                ),
+            ),
+            new OA\Response(
+                response: 409,
+                description: 'Invalid reservation status transition',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(
+                            property: 'message',
+                            type: 'string',
+                            example: 'Unable to change reservation status from pending to confirmed.',
+                        ),
+                    ],
+                ),
+            ),
+            new OA\Response(
+                response: 500,
+                description: 'Unexpected error',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(
+                            property: 'message',
+                            type: 'string',
+                            example: 'Unexpected error occurred.',
+                        ),
+                    ],
+                ),
+            ),
         ]
     )]
     public function confirm(int $id, #[MapRequestPayload] ReservationStatuses $status): JsonResponse
