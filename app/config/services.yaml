@@ -28,5 +28,6 @@ services:
                 - '@App\Validation\Reservation\Rules\PickupBeforeReturnRule'
                 - '@App\Validation\Reservation\Rules\RentalLengthRule'
                 - '@App\Validation\Reservation\Rules\LeadTimeRule'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
