@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Dto;
 
-use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(required: ['available'])]
@@ -29,8 +28,6 @@ final readonly class AvailabilityStatus
             nullable: true,
         )]
         public array $violations = [],
-        #[OA\Property(ref: new Model(type: NormalizedAvailabilityWindow::class), nullable: true)]
-        public ?NormalizedAvailabilityWindow $normalized = null,
     ) {
     }
 }

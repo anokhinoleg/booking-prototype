@@ -8,5 +8,5 @@ use DateTimeImmutable;
 
 interface CheckAvailabilityGatewayInterface
 {
-    public function hasOverlap(int $vehicleId, DateTimeImmutable $pickupAtUtc, DateTimeImmutable $returnAtUtc): bool;
+    public function hasOverlap(int $vehicleId, DateTimeImmutable $startDateUtc, DateTimeImmutable $endDateUtc): bool;
 }

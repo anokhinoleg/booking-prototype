@@ -7,46 +7,56 @@ namespace App\Service;
 use App\Dao\CheckAvailabilityGatewayInterface;
 use App\Dto\AvailabilityRequest;
 use App\Dto\AvailabilityStatus;
-use App\Service\Normalizer\AvailabilityWindowNormalizer;
-use App\Validation\Availability\AvailabilityValidator;
-use App\Validation\Availability\Violation;
+use App\Dto\Reservation;
+use App\Validation\Reservation\ReservationValidator;
+use App\Validation\Reservation\Violation;
 use DateTimeImmutable;
 use DateTimeZone;
-use Throwable;
 
 final readonly class CheckAvailability
 {
     public function __construct(
-        private AvailabilityValidator $availabilityValidator,
+        private ReservationValidator $reservationValidator,
         private CheckAvailabilityGatewayInterface $availabilityGateway,
-        private AvailabilityWindowNormalizer $availabilityWindowNormalizer,
     ) {
     }
 
     public function execute(AvailabilityRequest $availabilityRequest): AvailabilityStatus
     {
         try {
-            $violations = $this->availabilityValidator->violate($availabilityRequest);
+            $reservation = new Reservation(
+                vehicleId: $availabilityRequest->vehicleId,
+                customerEmail: '',
+                startDate: $availabilityRequest->startDate,
+                endDate: $availabilityRequest->endDate,
+                pickupLocation: '',
+                dropOffLocation: '',
+            );
+
+            $violations = $this->reservationValidator->violate($reservation);
 
             if (count($violations) !== 0) {
                 return new AvailabilityStatus(
                     available: false,
                     violations: array_map(
-                        fn(Violation $violation): array => $this->mapViolation($violation),
+                        static fn(Violation $violation): array => [
+                            'field' => $violation->field,
+                            'code' => $violation->code,
+                            'message' => $violation->message,
+                        ],
                         $violations,
                     ),
                 );
             }
 
-            $pickupAt = new DateTimeImmutable($availabilityRequest->pickupAt);
-            $returnAt = new DateTimeImmutable($availabilityRequest->returnAt);
+            $utc = new DateTimeZone('UTC');
+            $startDate = (new DateTimeImmutable($availabilityRequest->startDate))->setTimezone($utc);
+            $endDate = (new DateTimeImmutable($availabilityRequest->endDate))->setTimezone($utc);
 
-            $normalized = $this->availabilityWindowNormalizer->normalize($pickupAt, $returnAt);
-            $timezone = $this->resolveTimezone();
             $hasOverlap = $this->availabilityGateway->hasOverlap(
                 $availabilityRequest->vehicleId,
-                $pickupAt->setTimezone($timezone),
-                $returnAt->setTimezone($timezone),
+                $startDate,
+                $endDate,
             );
 
             if ($hasOverlap) {
@@ -59,16 +69,11 @@ final readonly class CheckAvailability
                             'message' => 'Vehicle is already reserved for the selected window.',
                         ],
                     ],
-                    normalized: $normalized,
                 );
             }
 
-            return new AvailabilityStatus(
-                available: true,
-                violations: [],
-                normalized: $normalized,
-            );
-        } catch (Throwable) {
+            return new AvailabilityStatus(available: true);
+        } catch (\Exception) {
             return new AvailabilityStatus(
                 available: false,
                 violations: [
@@ -80,19 +85,5 @@ final readonly class CheckAvailability
                 ],
             );
         }
-    }
-
-    private function resolveTimezone(): DateTimeZone
-    {
-        return $this->availabilityWindowNormalizer->timezone();
-    }
-
-    private function mapViolation(Violation $violation): array
-    {
-        return [
-            'field' => $violation->field,
-            'code' => $violation->code,
-            'message' => $violation->message,
-        ];
     }
 }

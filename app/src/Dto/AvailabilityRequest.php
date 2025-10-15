@@ -9,8 +9,8 @@ use OpenApi\Attributes as OA;
 #[OA\Schema(
     required: [
         'vehicleId',
-        'pickupAt',
-        'returnAt',
+        'startDate',
+        'endDate',
     ],
 )]
 final readonly class AvailabilityRequest
@@ -19,9 +19,9 @@ final readonly class AvailabilityRequest
         #[OA\Property(type: 'integer', example: 1, nullable: false)]
         public int $vehicleId,
         #[OA\Property(type: 'string', format: 'date-time', example: '2025-10-20T08:00:00+02:00', nullable: false)]
-        public string $pickupAt,
+        public string $startDate,
         #[OA\Property(type: 'string', format: 'date-time', example: '2025-10-22T08:00:00+02:00', nullable: false)]
-        public string $returnAt,
+        public string $endDate,
     ) {
     }
 }

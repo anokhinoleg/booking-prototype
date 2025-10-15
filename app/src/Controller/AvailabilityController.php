@@ -6,7 +6,6 @@ namespace App\Controller;
 
 use App\Dto\AvailabilityRequest;
 use App\Dto\AvailabilityStatus;
-use App\Dto\NormalizedAvailabilityWindow;
 use App\Service\CheckAvailability;
 use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
@@ -26,7 +25,7 @@ final class AvailabilityController extends AbstractController
     #[Route('/availability', name: 'api_availability_check', methods: ['POST'])]
     #[OA\Post(
         path: '/v1/availability',
-        summary: 'Check whether the selected vehicle is free for the requested pickup and return window.',
+        summary: 'Check whether the selected vehicle is free for the requested rental window.',
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(ref: new Model(type: AvailabilityRequest::class)),
@@ -51,7 +50,6 @@ final class AvailabilityController extends AbstractController
                                 ],
                             ),
                         ),
-                        new OA\Property(property: 'normalized', ref: new Model(type: NormalizedAvailabilityWindow::class), nullable: true),
                     ],
                 ),
             ),
@@ -77,7 +75,6 @@ final class AvailabilityController extends AbstractController
             data: [
                 'available' => $availabilityStatus->available,
                 'violations' => $availabilityStatus->violations !== [] ? $availabilityStatus->violations : null,
-                'normalized' => $this->normalizeWindow($availabilityStatus->normalized),
             ],
             status: $statusCode,
         );
@@ -108,15 +105,4 @@ final class AvailabilityController extends AbstractController
         return 400;
     }
 
-    private function normalizeWindow(?NormalizedAvailabilityWindow $window): ?array
-    {
-        if ($window === null) {
-            return null;
-        }
-
-        return [
-            'pickup_utc' => $window->pickupUtc,
-            'return_utc' => $window->returnUtc,
-        ];
-    }
 }

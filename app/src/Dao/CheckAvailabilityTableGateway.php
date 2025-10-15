@@ -15,7 +15,7 @@ final readonly class CheckAvailabilityTableGateway implements CheckAvailabilityG
     {
     }
 
-    public function hasOverlap(int $vehicleId, DateTimeImmutable $pickupAtUtc, DateTimeImmutable $returnAtUtc): bool
+    public function hasOverlap(int $vehicleId, DateTimeImmutable $startDateUtc, DateTimeImmutable $endDateUtc): bool
     {
         $connection = $this->entityManager->getConnection();
 
@@ -24,13 +24,13 @@ final readonly class CheckAvailabilityTableGateway implements CheckAvailabilityG
             ->from('reservation', 'r')
             ->where('r.vehicle_id = :vehicle_id')
             ->andWhere('r.status IN (:status)')
-            ->andWhere('r.start_date < :return_at')
-            ->andWhere('r.end_date > :pickup_at')
+            ->andWhere('r.start_date < :end_date')
+            ->andWhere('r.end_date > :start_date')
             ->setMaxResults(1)
             ->setParameters([
                 'vehicle_id' => $vehicleId,
-                'pickup_at' => $pickupAtUtc->format('Y-m-d H:i:s'),
-                'return_at' => $returnAtUtc->format('Y-m-d H:i:s'),
+                'start_date' => $startDateUtc->format('Y-m-d H:i:s'),
+                'end_date' => $endDateUtc->format('Y-m-d H:i:s'),
             ])->setParameter(
                 key: 'status',
                 value: ReservationStatuses::getOverlappingStatuses(),

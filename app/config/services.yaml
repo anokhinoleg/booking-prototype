@@ -29,23 +29,5 @@ services:
                 - '@App\Validation\Reservation\Rules\RentalLengthRule'
                 - '@App\Validation\Reservation\Rules\LeadTimeRule'
 
-    App\Validation\Availability\Rules\DateTimeFormatRule: ~
-    App\Validation\Availability\Rules\PickupBeforeReturnRule: ~
-    App\Validation\Availability\Rules\RentalLengthRule: ~
-    App\Validation\Availability\Rules\LeadTimeRule:
-        arguments: [ 'Europe/Berlin' ]
-    App\Validation\Availability\Rules\VehicleIdRule: ~
-
-    App\Validation\Availability\AvailabilityValidator:
-        arguments:
-            $validationRules:
-                - '@App\Validation\Availability\Rules\DateTimeFormatRule'
-                - '@App\Validation\Availability\Rules\PickupBeforeReturnRule'
-                - '@App\Validation\Availability\Rules\RentalLengthRule'
-                - '@App\Validation\Availability\Rules\LeadTimeRule'
-                - '@App\Validation\Availability\Rules\VehicleIdRule'
-
-    App\Service\Normalizer\AvailabilityWindowNormalizer:
-        arguments: [ 'UTC' ]
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
