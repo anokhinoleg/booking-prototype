@@ -4,7 +4,12 @@ framework:
 
     # Note that the session will be started ONLY if you read or write from it.
     session: true
-
+    serializer:
+        enabled: true
+        default_context:
+            enable_constructor: true        # <-- allow constructor promotion DTOs
+            skip_null_values: false
+            allow_extra_attributes: false
     #esi: true
     #fragments: true
 

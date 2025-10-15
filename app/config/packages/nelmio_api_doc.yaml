@@ -1,0 +1,9 @@
+nelmio_api_doc:
+    documentation:
+        info:
+            title: MILES Short-term Rental API
+            version: 0.1.0
+            description: Prototype API for 1–60 day rentals
+    areas:
+        path_patterns: ['^/api', '^/v1']
+
