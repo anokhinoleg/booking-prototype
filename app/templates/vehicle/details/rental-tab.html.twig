@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Booking Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        body { font-family: system-ui, sans-serif; margin: 24px; }
+        label { display:block; margin: 8px 0 4px; }
+        input, select, button { padding: 8px; font-size: 16px; }
+        .row { display:flex; gap:12px; flex-wrap:wrap; }
+        pre { background:#f5f5f7; padding:12px; border-radius:8px; overflow:auto; }
+    </style>
+</head>
+<body>
+<h1>Short-term Rental Demo</h1>
+
+<div class="row">
+    <div>
+        <label for="vehicle">Vehicle</label>
+        <select id="vehicle">
+            <option value="1">Ford</option>
+            <option value="2">Toyota</option>
+        </select>
+    </div>
+    <div>
+        <label for="email">Email</label>
+        <input id="email" type="email"/>
+    </div>
+    <div>
+        <label for="pickupStation">Pickup station</label>
+        <select id="pickupStation">
+            <option value="Berlin">Berlin</option>
+            <option value="Hamburg">Hamburg</option>
+            <option value="Munich">Munich</option>
+        </select>
+    </div>
+    <div>
+        <label for="returnStation">Return station</label>
+        <select id="returnStation">
+            <option value="Berlin">Berlin</option>
+            <option value="Hamburg">Hamburg</option>
+            <option value="Munich">Munich</option>
+        </select>
+    </div>
+</div>
+
+<div class="row" style="margin-top:10px">
+    <div>
+        <label for="pickupAt">Pickup (local, Europe/Berlin)</label>
+        <input id="pickupAt" type="datetime-local" />
+    </div>
+    <div>
+        <label for="returnAt">Return (local, Europe/Berlin)</label>
+        <input id="returnAt" type="datetime-local" />
+    </div>
+</div>
+
+<div class="row" style="margin-top:14px">
+    <button id="checkBtn">Check availability</button>
+    <button id="reserveBtn">Create reservation</button>
+</div>
+
+<h3>Response</h3>
+<pre id="out">(responses appear here)</pre>
+
+<script>
+    const $ = sel => document.querySelector(sel);
+    const out = $('#out');
+
+    async function loadBasics() {
+        const [vs, ss] = await Promise.all([
+            fetch('/api/vehicles').then(r=>r.json()),
+            fetch('/api/stations').then(r=>r.json())
+        ]);
+        const vSel = $('#vehicle'); vSel.innerHTML = vs.map(v=>`<option value="${v.id}">${v.name}</option>`).join('');
+        const sSel1 = $('#pickupStation'), sSel2 = $('#returnStation');
+        sSel1.innerHTML = ss.map(s=>`<option value="${s.code}">${s.name}</option>`).join('');
+        sSel2.innerHTML = sSel1.innerHTML;
+
+        // convenience defaults
+        const now = new Date();
+        const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1, 8, 0, 0);
+        const day2 = new Date(now.getFullYear(), now.getMonth(), now.getDate()+2, 8, 0, 0);
+        $('#pickupAt').value = new Date(tomorrow - (tomorrow.getTimezoneOffset()*60000)).toISOString().slice(0,16);
+        $('#returnAt').value = new Date(day2 - (day2.getTimezoneOffset()*60000)).toISOString().slice(0,16);
+    }
+
+    function payload() {
+
+        return {
+            vehicleId: parseInt($('#vehicle').value),
+            customerEmail: $('#email').value,
+            pickupLocation: $('#pickupStation').value,
+            dropOffLocation: $('#returnStation').value,
+            // Send naive local ISO; backend treats as Europe/Berlin local and converts to UTC
+            startDate: $('#pickupAt').value + ':00',
+            endDate: $('#returnAt').value + ':00',
+        };
+    }
+
+    async function checkAvailability() {
+        const p = payload();
+        const res = await fetch('/v1/availability', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
+                vehicleId: p.vehicleId,
+                startDate: p.startDate,
+                endDate: p.endDate
+            })});
+        out.textContent = JSON.stringify(await res.json(), null, 2);
+    }
+
+    async function createReservation() {
+        const p = payload();
+        // const idem = crypto.randomUUID();
+        const res = await fetch(
+            '/v1/reservations',
+            {
+                method:'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify(p)
+            }
+        );
+        out.textContent = JSON.stringify(await res.json(), null, 2);
+    }
+
+    $('#checkBtn').addEventListener('click', checkAvailability);
+    $('#reserveBtn').addEventListener('click', createReservation);
+    loadBasics();
+</script>
+</body>
+</html>
