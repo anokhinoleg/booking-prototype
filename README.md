@@ -54,7 +54,7 @@ Visit `/api/doc` (default Nelmio route) once the stack is running to explore sch
    docker compose exec php php bin/console doctrine:migrations:migrate --no-interaction
    ```
 
-### Iterating
+### Web Interface
 
 - Application URL: `http://localhost:8080` (Symfony front controller).
 - Swagger base URL: `http://localhost:8080/api/doc`.
