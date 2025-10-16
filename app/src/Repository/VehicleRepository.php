@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
-use Doctrine\ORM\EntityRepository;
-
-final class VehicleRepository extends EntityRepository implements VehicleRepositoryInterface
+final class VehicleRepository implements VehicleRepositoryInterface
 {
     private const array VEHICLES = [
         1 => [

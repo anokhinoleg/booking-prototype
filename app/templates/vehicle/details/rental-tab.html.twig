@@ -19,8 +19,9 @@
     <div>
         <label for="vehicle">Vehicle</label>
         <select id="vehicle">
-            <option value="1">Ford</option>
-            <option value="2">Toyota</option>
+            {% for vehicle in vehicles %}
+                <option value="{{ vehicle.id }}">{{ vehicle.name }}: {{ vehicle.make }}</option>
+            {% endfor %}
         </select>
     </div>
     <div>
@@ -60,6 +61,15 @@
     <button id="checkBtn">Check availability</button>
     <button id="reserveBtn">Create reservation</button>
 </div>
+
+<h3>Busyness</h3>
+<div>
+    this area will show occupied date ranges including those which mock subscription date ranges
+    nevertheless these subscription mock date ranges are not included in availability check/calculation
+    because availability calculation is performed now on a database level based on reservation table only
+    so it is possible to book dates from subscription mock date ranges but not possible from reservation's
+</div>
+<pre id="busyness">(occupied schedule)</pre>
 
 <h3>Response</h3>
 <pre id="out">(responses appear here)</pre>
@@ -123,8 +133,22 @@
         out.textContent = JSON.stringify(await res.json(), null, 2);
     }
 
+    async function getOccupiedReservations() {
+        let vehicleId = parseInt($('#vehicle').value);
+        const res = await fetch(
+            '/v1/vehicles/' + vehicleId + '/occupied-ranges',
+            {
+                method:'GET',
+                headers: {'Content-Type':'application/json'},
+            }
+        );
+        $('#busyness').textContent = JSON.stringify(await res.json(), null, 2);
+    }
+
     $('#checkBtn').addEventListener('click', checkAvailability);
     $('#reserveBtn').addEventListener('click', createReservation);
+    $('#vehicle').addEventListener('click', getOccupiedReservations);
+
     loadBasics();
 </script>
 </body>
